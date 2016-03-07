@@ -1056,6 +1056,14 @@ void Exploration()
 			if (generation == 99)
 			{
 				ReactorResults[j] = ReactorInstance(ReactorSet[j], j);
+
+				outfile.open("Reactor_" + std::to_string(j) + "AtomicParticles.txt", ios::app);
+				for(int n = 0;n < ReactorSet[j].size(); n++)
+				{
+					ReactorSet[j][n]->GetComponentRBNs()[0]->print_ToFile(outfile);
+				}
+				outfile.close();
+
 			}else 
 			{
 				ReactorResults[j] = ReactorInstance(ReactorSet[j], -1);
@@ -1475,28 +1483,28 @@ int main(int argc, char *argv[])
 
 	cout << number;
 	
-//	Exploration();
+	Exploration();
 	
 	
 //	testMemLeak();
-	std::vector<bool> InitOne (12, true );
-	ofstream f1;
-	f1.open("test.txt");
-
-	std::string line;
+//	std::vector<bool> InitOne (12, true );
+//	ofstream f1;
+//	f1.open("test.txt");
+//
+//	std::string line;
 //	std::vector<string> rbnFile;
-//
-	RBN* a = new RBN(12, 2, 12, InitOne);
-//
-	a->print_ToFile(f1);
-	if(!f1.is_open())
-	{
-		cout << "Error opening file \n";
-	}
-//
+////
+//	RBN* a = new RBN(12, 2, 12, InitOne);
+////
+//	a->print_ToFile(f1);
+//	if(!f1.is_open())
+//	{
+//		cout << "Error opening file \n";
+//	}
+////
 //	RBN* b = new RBN(12, 2, 12, InitOne);
 //	b->print_ToFile(f1);
-	f1.close();
+//	f1.close();
 //	ifstream infile;
 //	infile.open("testRBN.txt");
 //	int i = 0;
@@ -1512,12 +1520,11 @@ int main(int argc, char *argv[])
 //	cin.get();
 
 	
-	//cin.get();
+
 	//rbnCL();
 	cout << "Done";
 
-
-	 
+	cin.get();
 	
 	//return 0;
 }
