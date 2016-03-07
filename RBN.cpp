@@ -98,28 +98,58 @@ RBN::RBN(int nodeNumber, int inputsToNode, int bondingSiteNumber , std::vector<b
 	}
 	//print_structMatrix();
 }
-
+//TODO Neeed to correctly asighn rbn size and k not hard code
 RBN::RBN(std::vector<string> rbnDefine)
 {
 	int j;
+    rbnSize= 12;
+    k = 2;
+    b = 0;
 	std::vector<int> strutMatrixLine;
-	for(int i = 0; i < 12; i++)
+    initPattern = std::vector<bool> (12, true);
+	//Generate node list
+    for(int i = 0; i < 12; i++)
 	{
-		//nodeList.push_back(new Node(rbnDefine[i]));
+
+		nodeList.push_back(new Node(rbnDefine[i]));
 	}
+    // generate topology
 	for(int i = 12; i < 24; i++)
 	{
 		std::stringstream ss(rbnDefine[i]);
 		while (ss >> j)
 		{
-			strutMatrixLine.push_back(j);
 
-			if (ss.peek() == ',')
-				ss.ignore();
+
+			strutMatrixLine.push_back(j);
 		}
 
 		structMatrix.push_back(strutMatrixLine);
+
+        nodeList[i - 12]->LinkNode(nodeList[structMatrix[i - 12][0]]);
+        nodeList[i - 12]->LinkNode(nodeList[structMatrix[i - 12][1]]);
+
+		strutMatrixLine.clear();
 	}
+
+    std::stringstream ss(rbnDefine[24]);
+    std::string ILString;
+    std::vector<int> interactionGroup;
+    while(std::getline(ss, ILString, ';'))
+    {
+        std::stringstream ILStream(ILString);
+
+        while(ILStream >> j)
+        {
+            if (ss.peek() == ',')
+                ss.ignore();
+            interactionGroup.push_back(j);
+
+        }
+        InteractionGroups.push_back(interactionGroup);
+        interactionGroup.clear();
+    }
+
 }
 
 RBN::RBN(const RBN& other)

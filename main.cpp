@@ -1481,47 +1481,59 @@ int main(int argc, char *argv[])
 	
 	int number =  letter_c - letter_a;
 
-	cout << number;
+	//cout << number;
 	
-	Exploration();
+//	Exploration();
 	
 	
 //	testMemLeak();
-//	std::vector<bool> InitOne (12, true );
-//	ofstream f1;
-//	f1.open("test.txt");
-//
-//	std::string line;
-//	std::vector<string> rbnFile;
-////
-//	RBN* a = new RBN(12, 2, 12, InitOne);
-////
-//	a->print_ToFile(f1);
-//	if(!f1.is_open())
-//	{
-//		cout << "Error opening file \n";
-//	}
-////
-//	RBN* b = new RBN(12, 2, 12, InitOne);
-//	b->print_ToFile(f1);
-//	f1.close();
-//	ifstream infile;
-//	infile.open("testRBN.txt");
-//	int i = 0;
-//	while (std::getline(infile, line) && i < 25)
-//    {
-//        rbnFile.push_back(line);
-//		i++;
-//    }
-//
-//
-//
-//
-//	cin.get();
+	std::vector<bool> InitOne (12, true );
+	ofstream f1;
+	f1.open("test.txt");
 
-	
+	std::string line;
+	std::vector<string> rbnFile;
 
-	//rbnCL();
+	RBN* a = new RBN(12, 2, 12, InitOne);
+
+	a->print_ToFile(f1);
+	if(!f1.is_open())
+	{
+		cout << "Error opening file \n";
+	}
+
+	RBN* b = new RBN(12, 2, 12, InitOne);
+	b->print_ToFile(f1);
+	f1.close();
+	ifstream infile;
+	infile.open("test.txt");
+	int i = 0;
+	while (std::getline(infile, line) && i < 25)
+    {
+        rbnFile.push_back(line);
+		i++;
+    }
+
+	RBN* c = new RBN(rbnFile);
+
+	c->RecalcualteProperties();
+	a->RecalcualteProperties();
+
+	if(a->GetCycleLengh() == c->GetCycleLengh())
+	{
+		cout << "Working Thing \n";
+	} else{
+		cout << "We done fucked up \n";
+	}
+
+
+
+
+
+
+
+
+//	rbnCL();
 	cout << "Done";
 
 	cin.get();

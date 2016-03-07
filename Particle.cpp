@@ -348,11 +348,11 @@ void Particle::CalculateParticle()
 	{
 		Bonds[i]->BuildBond();
 	}
-//	power = 1;
-//	cycleCounter =1;
-//	CalculateCycleLength(true);
-//	CalculateTransiant(true);
-//	CalculateLiveliness(true);
+	power = 1;
+	cycleCounter =1;
+	CalculateCycleLength(true);
+	CalculateTransiant(true);
+	CalculateLiveliness(true);
 
 	power = 1;
 	cycleCounter =1;

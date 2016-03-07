@@ -2,7 +2,7 @@
 #define IG_NODE
 
 #include <stdlib.h>
-
+#include <string>
 #include <vector>
 /*
 * Node defines an instance of a node in
@@ -15,6 +15,7 @@ class Node
 {
 public:
 	Node(int);
+	Node(std::string);
 	Node(const Node&);
 	virtual Node* clone() const;
 	int GetIndexOfInputFrom(Node*); 

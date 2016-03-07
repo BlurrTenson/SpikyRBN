@@ -1,6 +1,8 @@
 #include "Node.h"
 #include <stdlib.h>
 #include <time.h>
+#include <sstream>
+#include <iostream>
 
 Node::Node(int numberOfInputs)
 {
@@ -18,6 +20,22 @@ Node::Node(int numberOfInputs)
 		currentState =true;
 	else
 		currentState = false;
+}
+
+Node::Node(std::string nodeDef)
+{
+    std::cout << nodeDef << "\n";
+    int j;
+
+    for(int i =0; i < nodeDef.size(); i++)
+    {
+        j = nodeDef[i] - '0';
+        if (j == 0 )
+            lookupTable.push_back(false);
+        else
+            lookupTable.push_back(true);
+    }
+    std::cout << "\n\n";
 }
 
 Node::Node(const Node& other)
