@@ -119,7 +119,8 @@ RBN::RBN(std::vector<string> rbnDefine)
 		std::stringstream ss(rbnDefine[i]);
 		while (ss >> j)
 		{
-
+			 if (ss.peek() == ',')
+                ss.ignore();
 
 			strutMatrixLine.push_back(j);
 		}
@@ -135,20 +136,32 @@ RBN::RBN(std::vector<string> rbnDefine)
     std::stringstream ss(rbnDefine[24]);
     std::string ILString;
     std::vector<int> interactionGroup;
-    while(std::getline(ss, ILString, ';'))
-    {
-        std::stringstream ILStream(ILString);
 
-        while(ILStream >> j)
-        {
-            if (ss.peek() == ',')
+	std::string s = rbnDefine[24];
+	std::string delimiter = ";";
+
+	size_t pos = 0;
+	std::string token;
+
+	while ((pos = s.find(delimiter)) != std::string::npos) {
+		token = s.substr(0, pos);
+		std::cout << token << std::endl;
+		s.erase(0, pos + delimiter.length());
+
+		std::stringstream ss(token);
+		while (ss >> j)
+		{
+			 if (ss.peek() == ',')
                 ss.ignore();
-            interactionGroup.push_back(j);
 
-        }
-        InteractionGroups.push_back(interactionGroup);
-        interactionGroup.clear();
-    }
+			interactionGroup.push_back(j);
+		}
+
+		InteractionGroups.push_back(interactionGroup);
+	}
+   
+
+
 
 }
 
