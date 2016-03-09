@@ -72,6 +72,7 @@ public:
 	int GetUniqueID();
 	int NumberOfBindableSingletons();
 	void ConstructRBN();
+	void CalculateTransiant();
 private:
 	void GenerateNetworkTopology();
 	void GenerateNodes();
@@ -80,7 +81,7 @@ private:
 	void GenerateInteractionGroup(int); //Group the generated nodes together into "interaction groups" ie the spikes 
 	void AddBondingNodes();
 
-	void CalculateTransiant();
+
 	std::vector<bool> TimeStep();
 
 	int GetInputValue(std::vector<int>);

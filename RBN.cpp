@@ -114,6 +114,13 @@ RBN::RBN(std::vector<string> rbnDefine)
 		nodeList.push_back(new Node(rbnDefine[i]));
 	}
     // generate topology
+
+    std::map<int, int> influenceMap;
+
+    for(int i =0; i< rbnSize; i++)
+    {
+        influenceMap.emplace(i, 0);
+    }
 	for(int i = 12; i < 24; i++)
 	{
 		std::stringstream ss(rbnDefine[i]);
@@ -125,6 +132,10 @@ RBN::RBN(std::vector<string> rbnDefine)
 			strutMatrixLine.push_back(j);
 		}
 
+        for(int k = 0; k < strutMatrixLine.size(); k++)
+        {
+            influenceMap[strutMatrixLine[k]]++;
+        }
 		structMatrix.push_back(strutMatrixLine);
 
         nodeList[i - 12]->LinkNode(nodeList[structMatrix[i - 12][0]]);
@@ -132,6 +143,7 @@ RBN::RBN(std::vector<string> rbnDefine)
 
 		strutMatrixLine.clear();
 	}
+    nodeInfluence=influenceMap;
 
     std::stringstream ss(rbnDefine[24]);
     std::string ILString;
@@ -158,6 +170,7 @@ RBN::RBN(std::vector<string> rbnDefine)
 		}
 
 		InteractionGroups.push_back(interactionGroup);
+		interactionGroup.clear();
 	}
    
 

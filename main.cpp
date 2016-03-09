@@ -1516,10 +1516,45 @@ int main(int argc, char *argv[])
 
 	RBN* c = new RBN(rbnFile);
 
-	c->RecalcualteProperties();
-	a->RecalcualteProperties();
+	RBN* b2 = b->clone();
 
-	if(a->GetCycleLengh() == c->GetCycleLengh())
+
+    c->CalculateCycleLenght();
+    c->CalculateTransiant();
+    c->GenerateInteractionGroupInfluence(12, -1);
+	a->RecalcualteProperties();
+	c->RecalcualteProperties();
+
+    Particle* A = new Particle(a);
+    Particle* B = new Particle(b);
+    Particle* B2 = new Particle(b2);
+    Particle* C = new Particle(c);
+
+
+    InteractionList* ILa = A->GetFreeInteractionList(7);
+    InteractionList* ILb = B->GetFreeInteractionList(7);
+    InteractionList* ILb2 = B2->GetFreeInteractionList(7);
+    InteractionList* ILc = C->GetFreeInteractionList(7);
+
+    std::vector<Particle*> involvedParticles;
+    involvedParticles.push_back(A);
+    involvedParticles.push_back(B);
+
+    Particle* particleAB = new Particle(involvedParticles, new Bond(ILa, ILb, ILa->GetParentRBN(), ILb->GetParentRBN()) );
+
+    involvedParticles.clear();
+    involvedParticles.push_back(C);
+    involvedParticles.push_back(B2);
+
+    Particle* particleAB2 = new Particle(involvedParticles, new Bond(ILc, ILb2, ILc->GetParentRBN(), ILb2->GetParentRBN()) );
+
+    particleAB->CalculateParticle();
+    particleAB2->CalculateParticle();
+
+
+	if(particleAB->CalculateCycleLength(true) == particleAB2->CalculateCycleLength(true) &&
+           particleAB->CalculateCycleLength(false) == particleAB2->CalculateCycleLength(false)
+            )
 	{
 		cout << "Working Thing \n";
 	} else{
