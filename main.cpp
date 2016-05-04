@@ -1040,7 +1040,7 @@ void MassConservingReactor(std::vector<Particle*> Reac, int reacNumber)
 
 	for(int i = 0; i< Reac.size(); i++)
 	{
-		initialSet.push_back(Reac[i]->GetPrettyStruct());
+		initialSet.push_back(Reac[i]->GetPrettyName());
 		Reac[i]->setuID(concatNumbers(1, i + 1));
 		for(int j =0; j <100; j++) {
 			Reactor.push_back(Reac[i]->clone());
@@ -1121,14 +1121,13 @@ void MassConservingReactor(std::vector<Particle*> Reac, int reacNumber)
 
 							file.open("MCproducts_" + std::to_string(reacNumber), ios::app);
 							std::vector<std::string> prettystructure = productParticles[i]->GetPrettyStruct();
-							for(int j = 0; j< prettystructure.size(); j++)
+
+							file << productParticles[i]->GetParticleSize() << ":" << searchSet.size() << endl;
+							for(int structIdx = 0; structIdx < prettystructure.size(); structIdx++)
 							{
-								file << productParticles[i]->GetParticleSize() << ":" << searchSet.size() << endl;
-								for(int structIdx = 0; structIdx < prettystructure.size(); structIdx++)
-								{
-									file <<prettystructure[structIdx] << endl;
-								}
+								file <<prettystructure[structIdx] << endl;
 							}
+							file << endl;
 
 							file.close();
 
@@ -1140,14 +1139,13 @@ void MassConservingReactor(std::vector<Particle*> Reac, int reacNumber)
 						uniqueParticles[productParticles[i]->GetParticleSize()] = searchSet;
 						file.open("MCproducts_" + std::to_string(reacNumber), ios::app);
 						std::vector<std::string> prettystructure = productParticles[i]->GetPrettyStruct();
-						for(int j = 0; j< prettystructure.size(); j++)
+
+						file << productParticles[i]->GetParticleSize() << ":" << searchSet.size() << endl;
+						for(int structIdx = 0; structIdx < prettystructure.size(); structIdx++)
 						{
-							file << productParticles[i]->GetParticleSize() << ":" << searchSet.size() << endl;
-							for(int structIdx = 0; structIdx < prettystructure.size(); structIdx++)
-							{
-								file <<prettystructure[structIdx] << endl;
-							}
+							file <<prettystructure[structIdx] << endl;
 						}
+						file << endl;
 
 						file.close();
 					}
