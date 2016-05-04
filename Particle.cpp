@@ -34,7 +34,7 @@ Particle::Particle(std::vector<Particle*> componentParticles, Bond* newBond )
 	std::random_shuffle ( InteractionLists.begin(), InteractionLists.end() );
 	
 	//Get all IL involved in bonds
-	
+	uID = -1;
 
 }
 
@@ -44,6 +44,7 @@ Particle::Particle(std::vector<RBN*> componentRBNs, std::vector<Bond*> component
 	Bonds = componentBonds;
 	InteractionLists = componentInteractionLists;
 	std::random_shuffle ( InteractionLists.begin(), InteractionLists.end() );
+	uID = -1;
 
 }
 
@@ -57,6 +58,7 @@ Particle::Particle(RBN* atomicRBN )
 		InteractionLists.push_back(new InteractionList(ILIdx[itIL], atomicRBN));
 	}
 	std::random_shuffle ( InteractionLists.begin(), InteractionLists.end() );
+	uID = atomicRBN->GetUniqueID();
 }
 
 Particle::Particle(const Particle& other)
@@ -80,7 +82,7 @@ Particle::Particle(const Particle& other)
 	{
 		Bonds.push_back(other.Bonds[i]->clone(rbnMapping[other.Bonds[i]->GetParticipentA()], rbnMapping[other.Bonds[i]->GetParticipentB()]));
 	}
-
+	uID = other.uID;
 	hare = other.hare;
 	tortoise = other.tortoise;
 	power = other.power;
@@ -111,6 +113,16 @@ std::vector<std::string> Particle::GetPrettyName()
 		row = "";
 	}
 	return table;
+}
+
+std::string Particle::GetuID()
+{
+	return uID;
+}
+
+void Particle::setuID(std::string id)
+{
+	uID = id;
 }
 
 std::vector<std::string> Particle::GetPrettyStruct()

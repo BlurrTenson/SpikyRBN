@@ -32,6 +32,8 @@ public:
 	void CalculateLiveliness(bool);
 	std::vector<std::string> GetPrettyName();
 	std::vector<std::string> GetPrettyStruct();
+	std::string GetuID();
+	void setuID(std::string);
 	//Ever RBN takes one step along the cycle detection Algorithm
 	int Step();
 	// Every RBN updates current state to the stored next state
@@ -52,6 +54,7 @@ private:
 	std::vector<InteractionList* > InteractionLists;
 	std::string name;
 	std::vector<bool> hare, tortoise;
+	std::string uID;
 	int power, cycleCounter, cycleLength0, transiantLenght0, cycleLength1, transiantLenght1;
 };
 

@@ -5,6 +5,7 @@
 #include "RBN.h"
 #include "Node.h"
 #include "Particle.h"
+#include<sstream>
 #include "Bond.h"
 #include "InteractionList.h"
 #include <string>
@@ -1005,6 +1006,210 @@ std::vector<float> ReactorInstance(std::vector<Particle*> Reac, int reacNumber)
 	return Results;
 }
 
+std::string concatNumbers(int first, int second)
+{
+	ostringstream sStream;
+	sStream << first << ':';
+	sStream << second;
+
+
+	istringstream iStream(sStream.str());
+
+	std::string out;
+
+	iStream >> out;
+	return out;
+
+}
+
+void MassConservingReactor(std::vector<Particle*> Reac, int reacNumber)
+{
+    std::vector<Particle*> involvedParticles, productParticles, Reactor;
+    Particle* particleA, *particleB, *particleAB, *swapParticle;
+    InteractionList* ilAc, *ilBc;
+    Bond* possibleBond;
+	std::string productString, aString, bString;
+	std::vector<std::string> productStructure, bondsNew, bondsExisting;
+	ofstream file;
+	std::map<int, std::vector<std::vector<std::string>>> uniqueParticles;
+	std::map<int, std::vector<std::vector<std::string>>>::iterator UPittr ;
+	std::vector<std::vector<std::string>> initialSet, searchSet;
+	bool matchFound = false;
+
+    int CC , rndIdx;
+
+	for(int i = 0; i< Reac.size(); i++)
+	{
+		initialSet.push_back(Reac[i]->GetPrettyStruct());
+		Reac[i]->setuID(concatNumbers(1, i + 1));
+		for(int j =0; j <100; j++) {
+			Reactor.push_back(Reac[i]->clone());
+		}
+	}
+	uniqueParticles.emplace(1, initialSet);
+
+
+
+	random_shuffle(Reactor.begin(), Reactor.end());
+
+	for(int attempt = 0; attempt<1000; attempt++) {
+		involvedParticles.clear();
+
+		particleA = Reactor.back(); //Grab particle from reactor
+		Reactor.pop_back();
+		particleB = Reactor.back(); //Grab particle from reactor
+		Reactor.pop_back();
+		aString = particleA->GetuID();
+		bString = particleB->GetuID();
+		particleA->CalculateParticle();
+		particleB->CalculateParticle();
+
+
+		ilAc = particleA->GetFreeInteractionList();
+		ilBc = particleB->GetFreeInteractionList();
+		if (ilAc != NULL && ilBc != NULL) {
+
+			// Calculate the Collision Criterion PBP0(A) + PBP0(B) = 0
+			CC = ilAc->GetBindingProperty(false) + ilBc->GetBindingProperty(false);
+			//cout << "0A : " << PBP0A << " 1A : " << PBP1A << "\n";
+			//cout << "0B : " << PBP0B << " 1B : " << PBP1B << "\n";
+			if (CC == 0) {
+				cout<< "attempt sucessfull" << endl;
+				// Create a bond which makes NumberToSwap swaps between ilA and ilB
+				possibleBond = new Bond(ilAc, ilBc, ilAc->GetParentRBN(), ilBc->GetParentRBN()); //NewBond
+
+				involvedParticles.push_back(particleA);
+				involvedParticles.push_back(particleB);
+
+				// Create new composit particle
+				particleAB = new Particle(involvedParticles, possibleBond); //CompParticle
+				delete particleA;
+				delete particleB;
+
+				productParticles = CheckStability(particleAB);
+
+				for (int i = 0; i < productParticles.size(); i++) {
+					rndIdx = rand() % Reactor.size(); //get rand index
+					swapParticle = Reactor[rndIdx]; //take out particle at idx
+					Reactor[rndIdx] = productParticles[i]; // replace with one product
+					Reactor.push_back(swapParticle); // push back particle to back
+
+					UPittr = uniqueParticles.find(productParticles[i]->GetParticleSize());
+
+					if (UPittr != uniqueParticles.end()) { // check if particles of this size have been found before
+						searchSet = uniqueParticles[productParticles[i]->GetParticleSize()];
+
+						bondsNew = productParticles[i]->GetPrettyName();
+						std::sort(bondsNew.begin(), bondsNew.end());
+						for (int j = 0; j < searchSet.size(); j++) {
+							bondsExisting = searchSet[j];
+							std::sort(bondsExisting.begin(), bondsExisting.end());
+							if (bondsExisting == bondsNew) { //if the particle has already been discoverd
+								productParticles[i]->setuID(
+										concatNumbers(productParticles[i]->GetParticleSize(), j + 1));
+								j = searchSet.size(); //jump out of the for loop
+								matchFound = true; // set match to true
+
+							}
+						}
+						if (!matchFound) //if the particle is new
+						{
+							searchSet.push_back(bondsNew);
+							productParticles[i]->setuID(
+									concatNumbers(productParticles[i]->GetParticleSize(), searchSet.size()));
+							uniqueParticles[productParticles[i]->GetParticleSize()] = searchSet;
+
+							file.open("MCproducts_" + std::to_string(reacNumber), ios::app);
+							std::vector<std::string> prettystructure = productParticles[i]->GetPrettyStruct();
+							for(int j = 0; j< prettystructure.size(); j++)
+							{
+								file << productParticles[i]->GetParticleSize() << ":" << searchSet.size() << endl;
+								for(int structIdx = 0; structIdx < prettystructure.size(); structIdx++)
+								{
+									file <<prettystructure[structIdx] << endl;
+								}
+							}
+
+							file.close();
+
+						}
+					} else { // if no particles of this size have been found insert a new pair into the map
+						searchSet.push_back(productParticles[i]->GetPrettyName());
+						productParticles[i]->setuID(
+								concatNumbers(productParticles[i]->GetParticleSize(), searchSet.size()));
+						uniqueParticles[productParticles[i]->GetParticleSize()] = searchSet;
+						file.open("MCproducts_" + std::to_string(reacNumber), ios::app);
+						std::vector<std::string> prettystructure = productParticles[i]->GetPrettyStruct();
+						for(int j = 0; j< prettystructure.size(); j++)
+						{
+							file << productParticles[i]->GetParticleSize() << ":" << searchSet.size() << endl;
+							for(int structIdx = 0; structIdx < prettystructure.size(); structIdx++)
+							{
+								file <<prettystructure[structIdx] << endl;
+							}
+						}
+
+						file.close();
+					}
+					searchSet.clear();
+					matchFound = false;
+					productString = productString + " , " + productParticles[i]->GetuID();
+				}
+
+				file.open("MCreactions_" + std::to_string(reacNumber), ios::app);
+				file << aString << "," << bString << "-";
+				file << productString << endl;
+				file.close();
+				productString.clear();
+
+			} else { // if CC isn't met replace particleA and B randomly into the reactor
+				rndIdx = rand() % Reactor.size(); //get rand index
+				swapParticle = Reactor[rndIdx]; //take out particle at idx
+				Reactor[rndIdx] = particleA; // replace with one product
+				Reactor.push_back(swapParticle); // push back particle to back
+
+				rndIdx = rand() % Reac.size(); //get rand index
+				swapParticle = Reactor[rndIdx]; //take out particle at idx
+				Reactor[rndIdx] = particleB; // replace with one product
+				Reactor.push_back(swapParticle); // push back particle to back
+			}
+
+		} else { // if there are no interaction lists free replace A and B randomly.
+			rndIdx = rand() % Reactor.size(); //get rand index
+			swapParticle = Reactor[rndIdx]; //take out particle at idx
+			Reactor[rndIdx] = particleA; // replace with one product
+			Reactor.push_back(swapParticle); // push back particle to back
+
+			rndIdx = rand() % Reac.size(); //get rand index
+			swapParticle = Reactor[rndIdx]; //take out particle at idx
+			Reactor[rndIdx] = particleB; // replace with one product
+			Reactor.push_back(swapParticle); // push back particle to back
+		}
+	}
+	std::vector<std::string> reacUids;
+	for (int i = 0; i < Reactor.size(); i++)
+	{
+		reacUids.push_back(Reactor[i]->GetuID());
+	}
+
+	std::sort(reacUids.begin(), reacUids.end());
+
+	file.open("MCcontents_" + std::to_string(reacNumber), ios::app);
+	std::string currentUid = reacUids[0];
+	int count = 0;
+	for (int i = 0; i < reacUids.size(); i++)
+	{
+		if(currentUid == reacUids[i]) {
+			count++;
+		}else
+		{
+			file << currentUid << " , " << count << endl;
+			count = 1;
+			currentUid = reacUids[i];
+		}
+	}
+	file.close();
+}
 
 void Exploration()
 {
@@ -1470,108 +1675,50 @@ void testMemLeak()
    
 }
 
+void MCExploration()
+{
+	std::string line;
+	ifstream infile;
+	std::vector<Particle*> Reactor;
+	std::vector<std::string> rbnFile;
+	RBN* newRBN;
+	for(int i =0; i<20; i++) {
 
+		infile.open("Reactor_" + std::to_string(i) + "AtomicParticles.txt");
+		int j = 0;
+		int k = 0;
+		while (std::getline(infile, line) ) {
+			rbnFile.push_back(line);
+			j++;
+			if (j == 25)
+			{
+				newRBN = new RBN(rbnFile);
+				newRBN->SetRBNSymbol('A' + k);
+				Reactor.push_back(new Particle(newRBN));
+				k++;
+				j =0;
+				rbnFile.clear();
+			}
+		}
+
+		infile.close();
+		cout << "Reactor starting"<< endl;
+		MassConservingReactor(Reactor,i);
+		Reactor.clear();
+	}
+
+}
 
 int main(int argc, char *argv[])
 {
+
+	cout << concatNumbers(50, 200);
 	cout << "Hello there \n";
-
-	char letter_a = 'A';
-	char letter_c = letter_a + 3;
-	
-	int number =  letter_c - letter_a;
-
-	//cout << number;
-	
-//	Exploration();
-	
-	
-//	testMemLeak();
-	std::vector<bool> InitOne (12, true );
-	ofstream f1;
-	f1.open("test.txt");
-
-	std::string line;
-	std::vector<string> rbnFile;
-
-	RBN* a = new RBN(12, 2, 12, InitOne);
-
-	a->print_ToFile(f1);
-	if(!f1.is_open())
-	{
-		cout << "Error opening file \n";
-	}
-
-	RBN* b = new RBN(12, 2, 12, InitOne);
-	b->print_ToFile(f1);
-	f1.close();
-	ifstream infile;
-	infile.open("test.txt");
-	int i = 0;
-	while (std::getline(infile, line) && i < 25)
-    {
-        rbnFile.push_back(line);
-		i++;
-    }
-
-	RBN* c = new RBN(rbnFile);
-
-	RBN* b2 = b->clone();
-
-
-    c->CalculateCycleLenght();
-    c->CalculateTransiant();
-    c->GenerateInteractionGroupInfluence(12, -1);
-	a->RecalcualteProperties();
-	c->RecalcualteProperties();
-
-    Particle* A = new Particle(a);
-    Particle* B = new Particle(b);
-    Particle* B2 = new Particle(b2);
-    Particle* C = new Particle(c);
-
-
-    InteractionList* ILa = A->GetFreeInteractionList(7);
-    InteractionList* ILb = B->GetFreeInteractionList(7);
-    InteractionList* ILb2 = B2->GetFreeInteractionList(7);
-    InteractionList* ILc = C->GetFreeInteractionList(7);
-
-    std::vector<Particle*> involvedParticles;
-    involvedParticles.push_back(A);
-    involvedParticles.push_back(B);
-
-    Particle* particleAB = new Particle(involvedParticles, new Bond(ILa, ILb, ILa->GetParentRBN(), ILb->GetParentRBN()) );
-
-    involvedParticles.clear();
-    involvedParticles.push_back(C);
-    involvedParticles.push_back(B2);
-
-    Particle* particleAB2 = new Particle(involvedParticles, new Bond(ILc, ILb2, ILc->GetParentRBN(), ILb2->GetParentRBN()) );
-
-    particleAB->CalculateParticle();
-    particleAB2->CalculateParticle();
-
-
-	if(particleAB->CalculateCycleLength(true) == particleAB2->CalculateCycleLength(true) &&
-           particleAB->CalculateCycleLength(false) == particleAB2->CalculateCycleLength(false)
-            )
-	{
-		cout << "Working Thing \n";
-	} else{
-		cout << "We done fucked up \n";
-	}
-
-
-
-
-
-
-
-
-//	rbnCL();
-	cout << "Done";
-
+	MCExploration();
 	cin.get();
+
+
+
 	
 	//return 0;
 }
