@@ -150,29 +150,33 @@ RBN::RBN(std::vector<string> rbnDefine)
     std::vector<int> interactionGroup;
 
 	std::string s = rbnDefine[24];
-	std::string delimiter = ";";
+    std::string::iterator stItt = s.begin();
 
-	size_t pos = 0;
-	std::string token;
+    if(*stItt != '-' ) {
+        std::string delimiter = ";";
 
-	while ((pos = s.find(delimiter)) != std::string::npos) {
-		token = s.substr(0, pos);
-		std::cout << token << std::endl;
-		s.erase(0, pos + delimiter.length());
+        size_t pos = 0;
+        std::string token;
 
-		std::stringstream ss(token);
-		while (ss >> j)
-		{
-			 if (ss.peek() == ',')
-                ss.ignore();
+        while ((pos = s.find(delimiter)) != std::string::npos) {
+            token = s.substr(0, pos);
+            std::cout << token << std::endl;
+            s.erase(0, pos + delimiter.length());
 
-			interactionGroup.push_back(j);
-		}
+            std::stringstream ss(token);
+            while (ss >> j) {
+                if (ss.peek() == ',')
+                    ss.ignore();
 
-		InteractionGroups.push_back(interactionGroup);
-		interactionGroup.clear();
-	}
-   
+                interactionGroup.push_back(j);
+            }
+
+            InteractionGroups.push_back(interactionGroup);
+            interactionGroup.clear();
+        }
+    }else{
+        GenerateInteractionGroupInfluence(12, -1);
+    }
 
 
 
@@ -1484,7 +1488,7 @@ void RBN::print_ToFile(std::ofstream &outFile)
 		{
 			outFile << structMatrix[i][j] << ',';
 		}
-		outFile << endl;
+        outFile << endl;
 	}
 
 	for( int i=0; i < InteractionGroups.size(); i++)
